@@ -1,5 +1,5 @@
 %Wrapper function to hold analysis code for tracing program
-%To begin, select folder which contains .mi files
+%To begin, select folder which contains .txt files
 
 dir1 = uigetdir;
 dir1 = dir([dir1 filesep '*.txt']);
@@ -15,19 +15,19 @@ while j <= length(dir1)
     file1 = importdata([dir1(j).folder filesep dir1(j).name],'\t',219);
     data1 = file1.data;
     image1 = reshape(data1(1:prod(imageDim)),imageDim);
-    plane = griddedInterpolant([image1(1,1) image1(1,imageDim(2)); image1(imageDim(1),1) image1(imageDim(1),imageDim(2))]);
-    [tempX, tempY] = meshgrid(linspace(1,2,imageDim(2)),linspace(1,2,imageDim(1)));
-    subtractPlane = plane(tempX',tempY');
-    image1 = image1-subtractPlane;
-    image1 = (image1-min(image1(:)))./(max(image1(:))-min(image1(:)));
+%     plane = griddedInterpolant([image1(1,1) image1(1,imageDim(2)); image1(imageDim(1),1) image1(imageDim(1),imageDim(2))]);
+%     [tempX, tempY] = meshgrid(linspace(1,2,imageDim(2)),linspace(1,2,imageDim(1)));
+%     subtractPlane = plane(tempX',tempY');
+%     image1 = image1-subtractPlane;
+    [~,image1] = linearFlattenN(image1);
     figure(); imshow(image1);
     %image1 = image1./max(image1(:));
     Answer = questdlg('Any things here you want to capture?');
     if strcmp(Answer,'Yes')
         [Xframe,Yframe] = ginput(2);
-        Xframe = round(Xframe);
-        Yframe = round(Yframe);
-        matrix1 = image1(Yframe(1):Yframe(2),Xframe(1):Xframe(2));
+        Xframe = min(max(round(Xframe),[1 1]), [size(image1,2) size(image1,2)]);
+        Yframe = min(max(round(Yframe), [1 1]), [size(image1,1) size(image1,1)]);
+        [~,matrix1] = linearFlattenN(image1(Yframe(1):Yframe(2),Xframe(1):Xframe(2)));
         [surfX, surfY] = meshgrid(1:size(matrix1,2),1:size(matrix1,1));
         figure(4); surf(surfX,surfY,matrix1,'EdgeColor','none','FaceColor','interp'); hold on;
         figure(3); imshow(matrix1); hold on;
@@ -59,6 +59,8 @@ while j <= length(dir1)
             if i>20
                 onChain = (sideChain==(trace(i,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(i,1)-X0(3)))));
                 sideChain = (trace(i,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(i,1)-X0(3))));
+                inBox = (trace(i,1)>0 && trace(i,1)<size(matrix1,2)+1 && trace(i,2)>0 && trace(i,2)<size(matrix1,1)+1);
+                onChain = onChain && inBox;
             end
             i = i+1;
             if mod(i,1000)==0
@@ -68,8 +70,9 @@ while j <= length(dir1)
         end
         figure(3); plot(trace(:,1),trace(:,2));
         figure(4); plot3(trace(:,1),trace(:,2),h);
+        traces{length(traces)+1} = trace;
+        hs{length(hs)+1} = h;
     elseif strcmp(Answer,'No')
-        next = 0;
         j = j+1;
         traces{length(traces)+1} = trace;
         hs{length(hs)+1} = h;
@@ -79,5 +82,9 @@ while j <= length(dir1)
         j = 100000;
     end
     keyboard;
-    close all;
+    try
+        close 3;
+        close 4;
+    catch
+    end
 end
