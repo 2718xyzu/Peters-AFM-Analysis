@@ -12,7 +12,11 @@ if ~exist('j','var')
     j = 1;
 end
 
-save([dirName filesep 'Backup ' int2str(sum(fix(clock)))],'*s','j');
+if ~exist('analysis','var')
+    analysis = struct([1 0]);
+end
+
+save([dirName filesep 'zBackup ' int2str(sum(fix(clock)))],'analysis','j');
 
 % traces = {};
 % hs = {};
@@ -20,9 +24,8 @@ save([dirName filesep 'Backup ' int2str(sum(fix(clock)))],'*s','j');
 
 
 while j <= length(dir1)
-    file1 = importdata([dir1(j).folder filesep dir1(j).name],'\t',219);
-    data1 = file1.data;
-    image1 = reshape(data1(1:prod(imageDim)),imageDim);
+    filepath = [dir1(j).folder filesep dir1(j).name];
+    image1 = importTxtFile(filepath,imageDim);
 %     plane = griddedInterpolant([image1(1,1) image1(1,imageDim(2)); image1(imageDim(1),1) image1(imageDim(1),imageDim(2))]);
 %     [tempX, tempY] = meshgrid(linspace(1,2,imageDim(2)),linspace(1,2,imageDim(1)));
 %     subtractPlane = plane(tempX',tempY');
@@ -32,14 +35,20 @@ while j <= length(dir1)
     %image1 = image1./max(image1(:));
     Answer = questdlg('Any things here you want to capture?');
     if strcmp(Answer,'Yes')
+        currentAnalysis = length(analysis);
+        analysis(currentAnalysis+1).Xframe = 0;
         [Xframe,Yframe] = ginput(2);
         Xframe = min(max(round(Xframe),[1 1]), [size(image1,2) size(image1,2)]);
         Yframe = min(max(round(Yframe), [1 1]), [size(image1,1) size(image1,1)]);
+        analysis(end).Xframe = Xframe;
+        analysis(end).Yframe = Yframe;
         [matrix1,image2] = quadFlattenN(flat1(Yframe(1):Yframe(2),Xframe(1):Xframe(2)));
         [surfX, surfY] = meshgrid(1:size(matrix1,2),1:size(matrix1,1));
         figure(4); surf(surfX,surfY,matrix1,'EdgeColor','none','FaceColor','interp'); hold on;
         figure(3); imagesc(matrix1); hold on;
         [X0,Y0] = ginput(4);
+        analysis(end).X0 = X0;
+        analysis(end).Y0 = Y0;
     %     X1 = int(X0);
     %     Y1 = int(Y0);
     %     if X1(1)>X1(2)
@@ -57,8 +66,9 @@ while j <= length(dir1)
         clear trace h
         [trace(1,1),~] = ginput(1);
         trace(1,2) = (Y0(1)-Y0(2))/(X0(1)-X0(2))*(trace(1)-X0(1))+Y0(1);
+        analysis(end).initPoint = trace(1,:);
         h(1) = F(trace(1,2),trace(1,1));
-        [trace(2,:),h(2)] = followChain([X0(1) Y0(1)], [trace(1,1) trace(1,2)], F, 2);
+        [trace(2,:),h(2)] = followChain([X0(1) Y0(1)], [trace(1,1) trace(1,2)], F, 5/pixels);
         i = 3;
         %sideChain = (trace(2,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(2,1)-X0(3))));
         onChain = 1;
@@ -79,9 +89,10 @@ while j <= length(dir1)
         end
         figure(3); plot(trace(:,1),trace(:,2));
         figure(4); plot3(trace(:,1),trace(:,2),h);
-        traces{length(traces)+1} = trace;
-        hs{length(hs)+1} = h;
-        dirLists{length(dirLists)+1} = [dir1(j).folder filesep dir1(j).name];
+        analysis(end).trace = trace;
+        analysis(end).h = h;
+        analysis(end).path = [dir1(j).folder filesep dir1(j).name];
+        analysis(end).fileName = dir1(j).name;
     elseif strcmp(Answer,'No')
         j = j+1;
 %         traces{length(traces)+1} = trace;
@@ -90,6 +101,11 @@ while j <= length(dir1)
         close all;
     else
         j = 100000;
+    end
+    anS = questdlg('Do you approve of the fit? If yes, click yes and then "continue"',...
+        'Choose wisely', 'Yes', 'No');
+    if strcmp(anS,'No')
+        analysis(end) = [];
     end
     keyboard;
     try
