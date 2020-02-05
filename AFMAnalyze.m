@@ -16,7 +16,7 @@ retry = 0;
 if AnS(1) == 'R'
     retry = 1;
     uiopen();
-    dir1 = analysis(:).path;
+    dir1 = 1:length(analysis);
     analysisO = analysis;
     analysis = struct([]);
     j = 1;
@@ -28,6 +28,8 @@ else
     if ~exist('dirName','var')
         dirName = uigetdir;
         dir1 = dir([dirName filesep '*.txt']);
+    else
+        disp('Using last-selected directory.  Hope that"s okay. If not, clear dirName.');
     end
     
     if ~exist('analysis','var')
@@ -188,4 +190,5 @@ clear saveTraces
 for i = 1:length(analysis)
     saveTraces(1:length(analysis(i).trace),(2*i-1):(2*i)) = analysis(i).trace;
 end
+saveTraces(saveTraces==0) = NaN;
 saveTraces = saveTraces.*pixel;
