@@ -8,7 +8,7 @@
 imageSize = [600 600];
 imageDim = [256 256];
 pixel = imageSize(1)/imageDim(1);
-stepLength = 4;
+stepLength = 5;
 
 AnS = questdlg(['Would you like to analyze a new dataset or re-analyze an old one by'...
     ' selecting its analysis package?'],'New or old?','New','Re-analyze','New');
@@ -111,7 +111,7 @@ while j <= length(dir1)
         onChain = 1;
         while onChain
             [trace(i,:),h(i)] = followChain(trace(i-2,:), trace(i-1,:), F, stepLength/pixel);
-            if i>20
+            if i>10
                 %onChain = (sideChain==(trace(i,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(i,1)-X0(3)))));
                 %sideChain = (trace(i,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(i,1)-X0(3))));
                 inBox = (trace(i,1)>0 && trace(i,1)<size(matrix1,2)+1 && trace(i,2)>0 && trace(i,2)<size(matrix1,1)+1);
@@ -124,8 +124,9 @@ while j <= length(dir1)
             end
             %F = griddedInterpolant(matrix1);
         end
+        smoothedChain = smoothChain(trace, F, stepLength_pixel, 100);
         figure(4); plot3(trace(:,1),trace(:,2),h);
-        figure(k); plot(trace(:,1),trace(:,2));
+        figure(k); plot(trace(:,1),trace(:,2),'r');
         analysis(end).trace = trace;
         analysis(end).h = h;
         if retry
