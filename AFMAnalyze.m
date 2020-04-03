@@ -124,9 +124,11 @@ while j <= length(dir1)
             end
             %F = griddedInterpolant(matrix1);
         end
-        smoothedChain = smoothChain(trace, F, stepLength_pixel, 100);
+        smoothedChain = smoothChain(trace, F, stepLength/pixel, X0, Y0);
         figure(4); plot3(trace(:,1),trace(:,2),h);
         figure(k); plot(trace(:,1),trace(:,2),'r');
+        hold on; plot(smoothedChain(:,1),smoothedChain(:,2),'g');
+        analysis(end).smoothed = smoothedChain;
         analysis(end).trace = trace;
         analysis(end).h = h;
         if retry
