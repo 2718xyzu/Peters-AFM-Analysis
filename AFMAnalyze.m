@@ -125,12 +125,16 @@ while j <= length(dir1)
             %F = griddedInterpolant(matrix1);
         end
         smoothedChain = smoothChain(trace, F, stepLength/pixel, X0, Y0);
+        [a_n,E_n] = fourier_power_chain(smoothedChain);
         figure(4); plot3(trace(:,1),trace(:,2),h);
         figure(k); plot(trace(:,1),trace(:,2),'r');
         hold on; plot(smoothedChain(:,1),smoothedChain(:,2),'g');
         analysis(end).smoothed = smoothedChain;
         analysis(end).trace = trace;
         analysis(end).h = h;
+        analysis(end).smoothedChain = smoothedChain;
+        analysis(end).a_n = a_n;
+        analysis(end).E_n = E_n;
         if retry
             analysis(end).path = analysisO(j).path;
             analysis(end).fileName =analysisO(j).fileName;

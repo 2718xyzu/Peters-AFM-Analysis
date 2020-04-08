@@ -4,6 +4,26 @@ function smoothedChain = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
 %     end
     trace2 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0);
     perStep = 2;
+    avgTrace1 = average2chainz(trace, trace2, perStep);
+    trace4 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0);
+    trace5 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0);
+    avgTrace2 = average2chainz(trace4, trace5, perStep);
+    smoothedChain1 = average2chainz(avgTrace1, avgTrace2, perStep);
+    smoothedChainL = smoothdata(smoothedChain1, 1, 'loess', 7);
+    l = length(smoothedChainL);
+    smoothedChain(:,1) = spline(1:l,smoothedChainL(:,1),linspace(1,l,round(l*.8)));
+    smoothedChain(:,2) = spline(1:l,smoothedChainL(:,2),linspace(1,l,round(l*.8)));
+%     figure; hold on; plot(trace(:,1),trace(:,2));
+%     plot(trace2(:,1),trace2(:,2));
+%     plot(trace4(:,1),trace4(:,2));
+%     plot(trace5(:,1),trace5(:,2));
+%     plot(avgTrace1(:,1),avgTrace1(:,2));
+%     plot(avgTrace2(:,1),avgTrace2(:,2));
+%     plot(smoothedChain1(:,1),smoothedChain1(:,2));
+%     plot(smoothedChain(:,1),smoothedChain(:,2));
+    
+    
+    function trace3 = average2chainz(trace, trace2, perStep)
     trace3 = zeros([(length(trace)-1)*perStep 2]);
     p2 = zeros([length(trace2)-1 1])-1;
     k = 1;
@@ -34,16 +54,21 @@ function smoothedChain = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
             k = k+1;
         end
     end
-smoothedChain = trace3;
+    end
+
 
     function trace2 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0)
         i = 3;
         onChain = 1;
         trace2 = [(trace(1,1)+trace(2,1))/2 (trace(1,2)+trace(2,2))/2 ; ...
-            (trace(2,1)+trace(3,1))/2 (trace(2,2)+trace(3,2))/2];
+            (trace(2,1)+trace(3,1))/2 (trace(2,2)+trace(3,2))/2]+randn(2)*stepLengthInPixels/5;
         while onChain
             [trace2(i,:),~] = followChain(trace2(i-2,:), trace2(i-1,:), F, stepLengthInPixels);
-            onChain = norm([trace2(end,1)-trace(end,1) trace2(end,2)-trace(end,2)])>stepLengthInPixels && norm([trace(i,1)-X0(3), trace(i,2)-Y0(3)])>norm([X0(3)-X0(4),Y0(3)-Y0(4)]);
+            try
+            onChain = norm([trace2(end,1)-trace(end,1) trace2(end,2)-trace(end,2)])>stepLengthInPixels && norm([trace2(i,1)-X0(3), trace2(i,2)-Y0(3)])>norm([X0(3)-X0(4),Y0(3)-Y0(4)]);
+            catch
+                onChain = 0;
+            end
             i = i+1;
         end
         
