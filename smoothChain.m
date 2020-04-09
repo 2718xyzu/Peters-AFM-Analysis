@@ -1,5 +1,4 @@
-function smoothedChain = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
-    %hey, you could just spline over the midpoints that this thing finds?
+function [smoothedChain,L] = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
 %     if diff(trace).^2
 %     end
     trace2 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0);
@@ -10,6 +9,9 @@ function smoothedChain = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
     avgTrace2 = average2chainz(trace4, trace5, perStep);
     smoothedChain1 = average2chainz(avgTrace1, avgTrace2, perStep);
     smoothedChainL = smoothdata(smoothedChain1, 1, 'loess', 7);
+    dsc = diff(smoothedChainL);
+    ds_k = (dsc(:,1).^2+dsc(:,2).^2).^1/2;
+    L = sum(ds_k);
     l = length(smoothedChainL);
     smoothedChain(:,1) = spline(1:l,smoothedChainL(:,1),linspace(1,l,round(l*.8)));
     smoothedChain(:,2) = spline(1:l,smoothedChainL(:,2),linspace(1,l,round(l*.8)));
@@ -65,7 +67,7 @@ function smoothedChain = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
         while onChain
             [trace2(i,:),~] = followChain(trace2(i-2,:), trace2(i-1,:), F, stepLengthInPixels);
             try
-            onChain = norm([trace2(end,1)-trace(end,1) trace2(end,2)-trace(end,2)])>stepLengthInPixels && norm([trace2(i,1)-X0(3), trace2(i,2)-Y0(3)])>norm([X0(3)-X0(4),Y0(3)-Y0(4)]);
+            onChain = norm([trace2(end,1)-trace(end,1) trace2(end,2)-trace(end,2)])>stepLengthInPixels && norm([trace2(i,1)-X0(3), trace2(i,2)-Y0(3)])>norm([X0(3)-X0(4),Y0(3)-Y0(4)]) && i<length(trace)*10;
             catch
                 onChain = 0;
             end

@@ -8,7 +8,7 @@
 imageSize = [600 600];
 imageDim = [256 256];
 pixel = imageSize(1)/imageDim(1);
-stepLength = 5;
+stepLength = 6;
 
 AnS = questdlg(['Would you like to analyze a new dataset or re-analyze an old one by'...
     ' selecting its analysis package?'],'New or old?','New','Re-analyze','New');
@@ -124,7 +124,7 @@ while j <= length(dir1)
             end
             %F = griddedInterpolant(matrix1);
         end
-        smoothedChain = smoothChain(trace, F, stepLength/pixel, X0, Y0);
+        [smoothedChain,L] = smoothChain(trace, F, stepLength/pixel, X0, Y0);
         [a_n,E_n] = fourier_power_chain(smoothedChain);
         figure(4); plot3(trace(:,1),trace(:,2),h);
         figure(k); plot(trace(:,1),trace(:,2),'r');
@@ -135,6 +135,7 @@ while j <= length(dir1)
         analysis(end).smoothedChain = smoothedChain;
         analysis(end).a_n = a_n;
         analysis(end).E_n = E_n;
+        analysis(end).L = L*pixel;
         if retry
             analysis(end).path = analysisO(j).path;
             analysis(end).fileName =analysisO(j).fileName;
