@@ -2,6 +2,13 @@ function [a_n,E_n] = fourier_power_chain(smoothedChain)
     dsc = diff(smoothedChain);
     ds_k = (dsc(:,1).^2+dsc(:,2).^2).^1/2;
     theta_k = atan(dsc(:,2)./dsc(:,1));
+    change = diff(theta_k);
+    if nnz(abs(change)>pi/2)
+        k = find(abs(change)>pi/2);
+        for i = 1:length(k)
+            theta_k(k(i)+1:end) = theta_k(k(i)+1:end) - sign(change(k(i)))*pi;
+        end
+    end
     N = length(smoothedChain)-1;
     L = sum(ds_k);
     for n = 1:N-1
