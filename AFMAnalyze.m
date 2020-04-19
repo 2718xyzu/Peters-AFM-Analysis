@@ -1,9 +1,7 @@
 %Wrapper function to hold analysis code for tracing program
 %To begin, select folder which contains .txt files
 
-%NOTE: It's important to change these if the paramaters change.
-%If they change within a dataset, guess you'll have to do some fancier
-%coding to extract this data from an arbitrary file.
+%Initial parameters (must be constant for a whole dataset)
 
 imageSize = [600 600];
 imageDim = [256 256];
@@ -12,10 +10,25 @@ stepLength = 6;
 
 AnS = questdlg(['Would you like to analyze a new dataset or re-analyze an old one by'...
     ' selecting its analysis package?'],'New or old?','New','Re-analyze','New');
+
+%The 'retry' variable allows you to base new chain estimates on old ones;
+%in essence, the first time you analyze a set of images, 'retry' should be
+%zero.  Then you select the location of each molecule manually.  However,
+%if you want to re-analyze the same dataset, just at a different
+%stepLength, you don't need to tell it where the molecules are again, it
+%can extract that information from the analysis you already did.  That
+%makes re-analyses go faster while containing the same molecules as the
+%original analysis.
+
+%When you are re-analyzing, clicking in the lower left corner of an image
+%is equivalent to accepting the trace; the top right corner rejects the
+%trace; any click to the left of the x=0 line results in the debug command
+%(but the trace will be accepted if you don't delete it)
+
 retry = 0;
 if AnS(1) == 'R'
     retry = 1;
-    uiopen();
+    uiopen(); %select a completed analysisPackage from before
     dir1 = 1:length(analysis);
     analysisO = analysis;
     analysis = struct([]);
@@ -24,7 +37,7 @@ else
     if ~exist('j','var')
         j = 1;
     end
-    
+    %select your directory with all the images
     if ~exist('dirName','var')
         dirName = uigetdir;
         dir1 = dir([dirName filesep '*.txt']);
@@ -199,4 +212,4 @@ for i = 1:length(analysis)
     saveTraces(1:length(analysis(i).trace),(2*i-1):(2*i)) = analysis(i).trace;
 end
 saveTraces(saveTraces==0) = NaN;
-saveTraces = saveTraces.*pixel;
+saveTraces = saveTraces.*pixel; %put in the correct nm units; copy and paste this variable into excel

@@ -1,19 +1,21 @@
 function [smoothedChain,L] = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
+%   Requires the underlying AFM data in order to create new estimations of
+%   the chain; this must be run during chain extraction (inside AFMAnalyze)
 %     if diff(trace).^2
 %     end
-    trace2 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0);
+    trace2 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0); %make another trace with a slightly different starting point
     perStep = 2;
-    avgTrace1 = average2chainz(trace, trace2, perStep);
+    avgTrace1 = average2chainz(trace, trace2, perStep); %find the average of those two traces
     trace4 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0);
     trace5 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0);
-    avgTrace2 = average2chainz(trace4, trace5, perStep);
-    smoothedChain1 = average2chainz(avgTrace1, avgTrace2, perStep);
-    smoothedChainL = smoothdata(smoothedChain1, 1, 'loess', 7);
+    avgTrace2 = average2chainz(trace4, trace5, perStep); %do so again with two new traces
+    smoothedChain1 = average2chainz(avgTrace1, avgTrace2, perStep); %average the averages
+    smoothedChainL = smoothdata(smoothedChain1, 1, 'loess', 7); %smooth it a bit, robust to outliers
     dsc = diff(smoothedChainL);
     ds_k = (dsc(:,1).^2+dsc(:,2).^2).^1/2;
-    L = sum(ds_k);
+    L = sum(ds_k); %find out how long it is
     l = length(smoothedChainL);
-    smoothedChain(:,1) = spline(1:l,smoothedChainL(:,1),linspace(1,l,round(l*.8)));
+    smoothedChain(:,1) = spline(1:l,smoothedChainL(:,1),linspace(1,l,round(l*.8))); %interpolate along it
     smoothedChain(:,2) = spline(1:l,smoothedChainL(:,2),linspace(1,l,round(l*.8)));
 %     figure; hold on; plot(trace(:,1),trace(:,2));
 %     plot(trace2(:,1),trace2(:,2));
