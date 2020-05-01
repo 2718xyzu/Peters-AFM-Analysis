@@ -11,6 +11,8 @@ if reopen
     L = cell([1 4]);
     L_p = cell([1 4]);
     meanL = [0 0 0 0 ];
+    nmin = [0 0 0 0 ]+10000;
+    M = [0 0 0 0 ];
 end
 
 
@@ -31,11 +33,14 @@ for j = 1:4
 %     end
     if reopen
         uiopen;
+        M(j) = length(analysis);
         for i = 1:length(analysis)
             [a_n1,E_n1,L1] = fourier_power_chain(analysis(i).smoothedChain*pixel);
-            a_n{j}(i,:) = a_n1(1:nmax);
-            E_n{j}(i,:) = E_n1(1:nmax);
+            nmax = length(a_n1);
+            a_n{j}(i,1:nmax) = a_n1;
+            E_n{j}(i,1:nmax) = E_n1;
             L{j}(i) = L1;
+            nmin(j) = min(nmin(j),nmax);
         end
     end
     clear summary;
@@ -62,7 +67,7 @@ end
 
 for j = 1:4
     for i = 1:length(L{j})
-        L_p{j}(i,:) = L{j}(i)^2./(((1:nmax).^2).*pi^2.*var(a_n{j}));
+        L_p{j}(i,1:nmin(j)) = L{j}(i)^2./(((1:nmin(j)).^2).*pi^2.*var(a_n{j}(:,1:nmin(j))));
     end
 end
 
