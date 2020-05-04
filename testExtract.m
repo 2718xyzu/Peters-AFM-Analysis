@@ -1,3 +1,9 @@
+%a code for taking existing datasets that have a smoothedChain parameter
+%and finding relevant quantities of the fourier analysis and gathering them
+%into some plots and variables.  If your data doesn't have a smoothedChain
+%field, run the package through AFManalyze again (the dataset was produced
+%before the Fourier analysis was a thing)
+
 pixel = 600/256;
 
 close all;
@@ -80,5 +86,10 @@ end
 
 legend({'Control', 'Chloroquine', 'EtBr', 'Acridine'});
 
-
+figure; hold on;
+segment_length = [6 6 5 7];
+xoffset = [-.15 -.05 .05 .15];
+for j = 1:4
+    [~] = make_errrorbar_plot(mean(L_p{j}),M(j),a_n{j},meanL(j),pixel*2,segment_length(j),1:10,xoffset(j));
+end
 
