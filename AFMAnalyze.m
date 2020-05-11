@@ -3,9 +3,15 @@
 
 %Initial parameters (must be constant for a whole dataset)
 
-imageSize = [600 600];
-imageDim = [256 256];
-pixel = imageSize(1)/imageDim(1);
+imageSize = [600 600]; %in nm
+imageDim = [256 256]; %in pixels
+pixel = imageSize(1)/imageDim(1); %the pixel variable is the conversion factor, in nm/pixels; 
+%the structures this code saves have all position and length data stored in
+%units of pixels; in order to convert to nm, you have to multiply by
+%"pixel".  See the line of the code that creates saveTraces for an example.
+%For all data created in the spring of 2020, pixel = 600/256.  Pixel will
+%now be saved to each structure for future reference, but old structures
+%may not contain that field.  
 stepLength = 6;
 
 AnS = questdlg(['Would you like to analyze a new dataset or re-analyze an old one by'...
@@ -28,17 +34,36 @@ AnS = questdlg(['Would you like to analyze a new dataset or re-analyze an old on
 retry = 0;
 if AnS(1) == 'R'
     retry = 1;
+     anS = questdlg('Please Select the analysis package which contains the dataset to re-analyze',...
+        'Select package', 'Ok', 'Ok');
     uiopen(); %select a completed analysisPackage from before
     dir1 = 1:length(analysis);
     analysisO = analysis;
     analysis = struct([]);
+    if isfield(analysisO,'pixel')
+        analysis(1).pixel = analysisO(1).pixel;
+        pixel = analysisO(1).pixel;
+    else
+        analysis(1).pixel = pixel;
+    end
     j = 1;
+   
+    if ~exist('dirName','var')
+        anS = questdlg('Please Select the directory which contains all txt files from this dataset',...
+        'Select search directory', 'Ok', 'Ok');
+        dirName = uigetdir;
+        dir1 = dir([dirName filesep '*.txt']);
+    else
+        disp('Using last-selected directory.  Hope that"s okay. If not, clear dirName.');
+    end
 else
     if ~exist('j','var')
         j = 1;
     end
     %select your directory with all the images
     if ~exist('dirName','var')
+         anS = questdlg('Please Select the directory which contains all txt files from this dataset',...
+        'Select search directory', 'Ok', 'Ok');
         dirName = uigetdir;
         dir1 = dir([dirName filesep '*.txt']);
     else
@@ -47,6 +72,7 @@ else
     
     if ~exist('analysis','var')
         analysis = struct([]);
+        analysis(1).pixel = pixel;
     end
 end
 try
@@ -64,7 +90,7 @@ k = 5;
 
 while j <= length(dir1)
     if retry
-        filepath = analysisO(j).path;
+        filepath = [dir1(1).folder filesep analysisO(j).fileName];
     else
         filepath = [dir1(j).folder filesep dir1(j).name];
     end
