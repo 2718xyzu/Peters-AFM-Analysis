@@ -30,6 +30,9 @@ AnS = questdlg(['Would you like to analyze a new dataset or re-analyze an old on
 %is equivalent to accepting the trace; the top right corner rejects the
 %trace; any click to the left of the x=0 line results in the debug command
 %(but the trace will be accepted if you don't delete it)
+%The green curve shows the result of smoothChain.  If you don't think
+%you're going to do the Fourier analysis on a dataset, you don't have to
+%worry about what the green curve looks like.
 
 retry = 0;
 if AnS(1) == 'R'
