@@ -64,10 +64,13 @@ function [smoothedChain,L] = smoothChain(trace, F, stepLengthInPixels, X0, Y0)
     function trace2 = makeTraceFrom(trace, F, stepLengthInPixels, X0, Y0)
         i = 3;
         onChain = 1;
+        degreeRange = 63; %the default; to change this, make degreeRange an input variable in 
+        %the functions makeTraceFrom and smoothChain, as well as editing
+        %every instance of calling those functions
         trace2 = [(trace(1,1)+trace(2,1))/2 (trace(1,2)+trace(2,2))/2 ; ...
             (trace(2,1)+trace(3,1))/2 (trace(2,2)+trace(3,2))/2]+randn(2)*stepLengthInPixels/5;
         while onChain
-            [trace2(i,:),~] = followChain(trace2(i-2,:), trace2(i-1,:), F, stepLengthInPixels);
+            [trace2(i,:),~] = followChain(trace2(i-2,:), trace2(i-1,:), F, stepLengthInPixels, degreeRange);
             try
             onChain = norm([trace2(end,1)-trace(end,1) trace2(end,2)-trace(end,2)])>stepLengthInPixels && norm([trace2(i,1)-X0(3), trace2(i,2)-Y0(3)])>norm([X0(3)-X0(4),Y0(3)-Y0(4)]) && i<length(trace)*10;
             catch

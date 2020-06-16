@@ -147,12 +147,13 @@ while j <= length(dir1)
         end
             analysis(end).initPoint = trace(1,:);
         h(1) = F(trace(1,2),trace(1,1));
-        [trace(2,:),h(2)] = followChain([X0(1) Y0(1)], [trace(1,1) trace(1,2)], F, stepLength/pixel);
+        degreeRange = 63.43; %+- 63 degrees is the default range
+        [trace(2,:),h(2)] = followChain([X0(1) Y0(1)], [trace(1,1) trace(1,2)], F, stepLength/pixel, degreeRange);
         i = 3;
         %sideChain = (trace(2,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(2,1)-X0(3))));
         onChain = 1;
         while onChain
-            [trace(i,:),h(i)] = followChain(trace(i-2,:), trace(i-1,:), F, stepLength/pixel);
+            [trace(i,:),h(i)] = followChain(trace(i-2,:), trace(i-1,:), F, stepLength/pixel, degreeRange);
             if i>10
                 %onChain = (sideChain==(trace(i,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(i,1)-X0(3)))));
                 %sideChain = (trace(i,2)>(Y0(3)+(Y0(4)-Y0(3))/(X0(4)-X0(3))*(trace(i,1)-X0(3))));
