@@ -40,7 +40,6 @@ if AnS(1) == 'R'
      anS = questdlg('Please Select the analysis package which contains the dataset to re-analyze',...
         'Select package', 'Ok', 'Ok');
     uiopen(); %select a completed analysisPackage from before
-    dir1 = 1:length(analysis);
     analysisO = analysis;
     analysis = struct([]);
     if isfield(analysisO,'pixel')
@@ -50,15 +49,10 @@ if AnS(1) == 'R'
         analysis(1).pixel = pixel;
     end
     j = 1;
-   
-    if ~exist('dirName','var')
-        anS = questdlg('Please Select the directory which contains all txt files from this dataset',...
-        'Select search directory', 'Ok', 'Ok');
-        dirName = uigetdir;
-        dir1 = dir([dirName filesep '*.txt']);
-    else
-        disp('Using last-selected directory.  Hope that"s okay. If not, clear dirName.');
-    end
+    anS = questdlg('Please Select the directory which contains all txt files from this dataset',...
+    'Select search directory', 'Ok', 'Ok');
+    dirName = uigetdir;
+    dir1 = dir([dirName filesep '*.txt']);
 else
     if ~exist('j','var')
         j = 1;
@@ -97,7 +91,15 @@ while j <= length(dir1)
     else
         filepath = [dir1(j).folder filesep dir1(j).name];
     end
-    image1 = importTxtFile(filepath,imageDim);
+    try
+        image1 = importTxtFile(filepath,imageDim);
+    catch
+        if retry
+            disp(['File ' analysisO(j).fileName ' not found, trying the next one']);
+            analysisO(j) = [];
+            continue
+        end
+    end
     %     plane = griddedInterpolant([image1(1,1) image1(1,imageDim(2)); image1(imageDim(1),1) image1(imageDim(1),imageDim(2))]);
     %     [tempX, tempY] = meshgrid(linspace(1,2,imageDim(2)),linspace(1,2,imageDim(1)));
     %     subtractPlane = plane(tempX',tempY');

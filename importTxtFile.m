@@ -1,6 +1,13 @@
 function image1 = importTxtFile(filepath,imageDim)
-    file1 = importdata(filepath,'\t',220); %NOTE: some of the files randomly have more or fewer
-    %header lines.  So change 220 to 219, or 221, if an error occurs. 
+for line = 218:221
+    try
+    file1 = importdata(filepath,'\t',line); %NOTE: some of the files randomly have more or fewer
+    %header lines.  So change to a few different values, if an error occurs, until one works. 
     data1 = file1.data;
     image1 = reshape(data1(1:prod(imageDim)),imageDim);
+    return
+    catch
+    end
+end
+[~] = importdata(filepath); %at this point the file itself probably doesn't exist
 end
