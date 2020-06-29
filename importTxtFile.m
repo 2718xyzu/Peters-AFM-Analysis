@@ -9,5 +9,7 @@ for line = 218:221
     catch
     end
 end
-[~] = importdata(filepath); %at this point the file itself probably doesn't exist
+assert(isfile(filepath)); %at this point the file itself probably doesn't exist
+%I guess if you get past that last line, it's a real file, but it's not an
+%mi file export (at least, not one I've run across before).  
 end
